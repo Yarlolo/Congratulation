@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ирина Ивановна - с юбилеем</title>
+    <title>Ирина Ивановна, с юбилеем!</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -53,21 +53,51 @@
 
         <!-- Audio Congratulations -->
         <section class="audio-section">
-            <h3 class="section-title">Аудиопоздравления</h3>
+            <h3 class="section-title">Аудио-поздравления</h3>
             <div class="audio-list">
                 <div class="audio-item">
-                    <img src="congratulations/audio/1.jpg" alt="Аудио обложка" class="audio-cover">
-                    <audio controls>
-                        <source src="congratulations/audio/1.mp3" type="audio/mpeg">
-                        Ваш браузер не поддерживает аудио.
-                    </audio>
+                    <img src="congratulations/audio/1.jpg" alt="Аудио обложка" class="audio-cover" id="cover1">
+                    <div class="audio-player-wrapper">
+                        <div class="custom-audio-controls">
+                            <button class="play-btn" data-audio="1">▶</button>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress1">
+                                    <div class="progress-fill" id="progressFill1"></div>
+                                </div>
+                                <div class="time-display">
+                                    <span class="current-time" id="currentTime1">0:00</span>
+                                    <span class="duration" id="duration1">0:00</span>
+                                </div>
+                            </div>
+                            <button class="volume-btn" data-audio="1">🔊</button>
+                        </div>
+                        <audio id="audio1" preload="metadata">
+                            <source src="congratulations/audio/1.mp3" type="audio/mpeg">
+                            Ваш браузер не поддерживает аудио.
+                        </audio>
+                    </div>
                 </div>
                 <div class="audio-item">
-                    <img src="congratulations/audio/2.jpg" alt="Аудио обложка" class="audio-cover">
-                    <audio controls>
-                        <source src="congratulations/audio/2.mp3" type="audio/mpeg">
-                        Ваш браузер не поддерживает аудио.
-                    </audio>
+                    <img src="congratulations/audio/2.jpg" alt="Аудио обложка" class="audio-cover" id="cover2">
+                    <div class="audio-player-wrapper">
+                        <div class="custom-audio-controls">
+                            <button class="play-btn" data-audio="2">▶</button>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progress2">
+                                    <div class="progress-fill" id="progressFill2"></div>
+                                </div>
+                                <div class="time-display">
+                                    <span class="current-time" id="currentTime2">0:00</span>
+                                    <span class="duration" id="duration2">0:00</span>
+                                </div>
+                            </div>
+                            <button class="volume-btn" data-audio="2">🔊</button>
+                        </div>
+                        <audio id="audio2" preload="metadata">
+                            <source src="congratulations/audio/2.mp3" type="audio/mpeg">
+                            Ваш браузер не поддерживает аудио.
+                        </audio>
+                    </div>
                 </div>
             </div>
         </section>
