@@ -56,12 +56,12 @@
             <h3 class="section-title">Аудиопоздравления</h3>
             <div class="audio-list">
                 <div class="audio-item">
-                    <img src="congratulations/audio/1.jpg" alt="Аудио обложка" class="audio-cover" id="cover1">
+                    <img src="congratulations/audio/1.jpg" alt="Аудио обложка" class="audio-cover" id="cover1" onclick="toggleAudio(1)">
                     <div class="audio-player-wrapper">
                         <div class="custom-audio-controls">
-                            <button class="play-btn" data-audio="1">▶</button>
+                            <button class="play-btn" data-audio="1" onclick="toggleAudio(1)">▶</button>
                             <div class="progress-container">
-                                <div class="progress-bar" id="progress1">
+                                <div class="progress-bar" id="progress1" onclick="seekAudio(1, event)">
                                     <div class="progress-fill" id="progressFill1"></div>
                                 </div>
                                 <div class="time-display">
@@ -69,21 +69,21 @@
                                     <span class="duration" id="duration1">0:00</span>
                                 </div>
                             </div>
-                            <button class="volume-btn" data-audio="1">🔊</button>
+                            <button class="volume-btn" data-audio="1" onclick="toggleMute(1)">🔊</button>
                         </div>
-                        <audio id="audio1" preload="metadata">
+                        <audio id="audio1" preload="metadata" onerror="handleAudioError(1)">
                             <source src="congratulations/audio/1.mp3" type="audio/mpeg">
                             Ваш браузер не поддерживает аудио.
                         </audio>
                     </div>
                 </div>
                 <div class="audio-item">
-                    <img src="congratulations/audio/2.jpg" alt="Аудио обложка" class="audio-cover" id="cover2">
+                    <img src="congratulations/audio/2.jpg" alt="Аудио обложка" class="audio-cover" id="cover2" onclick="toggleAudio(2)">
                     <div class="audio-player-wrapper">
                         <div class="custom-audio-controls">
-                            <button class="play-btn" data-audio="2">▶</button>
+                            <button class="play-btn" data-audio="2" onclick="toggleAudio(2)">▶</button>
                             <div class="progress-container">
-                                <div class="progress-bar" id="progress2">
+                                <div class="progress-bar" id="progress2" onclick="seekAudio(2, event)">
                                     <div class="progress-fill" id="progressFill2"></div>
                                 </div>
                                 <div class="time-display">
@@ -91,9 +91,9 @@
                                     <span class="duration" id="duration2">0:00</span>
                                 </div>
                             </div>
-                            <button class="volume-btn" data-audio="2">🔊</button>
+                            <button class="volume-btn" data-audio="2" onclick="toggleMute(2)">🔊</button>
                         </div>
-                        <audio id="audio2" preload="metadata">
+                        <audio id="audio2" preload="metadata" onerror="handleAudioError(2)">
                             <source src="congratulations/audio/2.mp3" type="audio/mpeg">
                             Ваш браузер не поддерживает аудио.
                         </audio>
