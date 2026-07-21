@@ -404,206 +404,224 @@ window.addEventListener('resize', function() {
 });
 
 
-// Audio player functionality - enlarge photo when playing
-document.addEventListener('DOMContentLoaded', function() {
-    const audioItems = document.querySelectorAll('.audio-item');
+// Audio player functionality - FIXED for mobile
+let audioInstances = {};
+
+function formatTime(seconds) {
+    if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return mins + ':' + (secs < 10 ? '0' : '') + secs;
+}
+
+function toggleAudio(id) {
+    const audio = document.getElementById('audio' + id);
+    const playBtn = document.querySelector(`.play-btn[data-audio="${id}"]`);
+    const cover = document.getElementById('cover' + id);
     
-    audioItems.forEach(item => {
-        const audio = item.querySelector('audio');
-        const cover = item.querySelector('.audio-cover');
+    if (!audio) return;
+    
+    // Если аудио загружается, ждем
+    if (audio.readyState < 2) {
+        audio.load();
+        setTimeout(() => {
+            toggleAudio(id);
+        }, 500);
+        return;
+    }
+    
+    if (audio.paused) {
+        // Останавливаем все другие аудио
+        document.querySelectorAll('audio').forEach(otherAudio => {
+            if (otherAudio !== audio && !otherAudio.paused) {
+                otherAudio.pause();
+                const otherId = otherAudio.id.replace('audio', '');
+                const otherBtn = document.querySelector(`.play-btn[data-audio="${otherId}"]`);
+                const otherCover = document.getElementById('cover' + otherId);
+                if (otherBtn) otherBtn.textContent = '▶';
+                if (otherCover) otherCover.classList.remove('playing');
+            }
+        });
         
-        if (audio && cover) {
-            // При начале воспроизведения
-            audio.addEventListener('play', function() {
-                cover.classList.add('playing');
-                // Останавливаем другие аудио и убираем их анимацию
-                audioItems.forEach(otherItem => {
-                    const otherAudio = otherItem.querySelector('audio');
-                    const otherCover = otherItem.querySelector('.audio-cover');
-                    if (otherAudio && otherAudio !== audio && !otherAudio.paused) {
-                        otherAudio.pause();
-                        if (otherCover) {
-                            otherCover.classList.remove('playing');
-                        }
-                    }
-                });
+        // Пробуем воспроизвести
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                if (playBtn) playBtn.textContent = '⏸';
+                if (cover) cover.classList.add('playing');
+            }).catch(error => {
+                console.log('Playback error:', error);
+                // Показываем сообщение пользователю
+                if (playBtn) {
+                    playBtn.textContent = '⚠️';
+                    setTimeout(() => {
+                        playBtn.textContent = '▶';
+                    }, 2000);
+                }
+                // Пробуем альтернативный способ
+                setTimeout(() => {
+                    audio.load();
+                    audio.play().catch(e => console.log('Retry failed:', e));
+                }, 1000);
+            });
+        }
+    } else {
+        audio.pause();
+        if (playBtn) playBtn.textContent = '▶';
+        if (cover) cover.classList.remove('playing');
+    }
+}
+
+function seekAudio(id, event) {
+    const audio = document.getElementById('audio' + id);
+    const progressBar = document.getElementById('progress' + id);
+    if (!audio || !progressBar || !audio.duration) return;
+    
+    const rect = progressBar.getBoundingClientRect();
+    let x = 0;
+    
+    if (event.touches) {
+        x = (event.touches[0].clientX - rect.left) / rect.width;
+    } else {
+        x = (event.clientX - rect.left) / rect.width;
+    }
+    
+    x = Math.max(0, Math.min(1, x));
+    audio.currentTime = x * audio.duration;
+    updateProgress(id);
+}
+
+function updateProgress(id) {
+    const audio = document.getElementById('audio' + id);
+    const progressFill = document.getElementById('progressFill' + id);
+    const currentTimeDisplay = document.getElementById('currentTime' + id);
+    
+    if (!audio || !progressFill) return;
+    
+    if (audio.duration && !isNaN(audio.duration)) {
+        const progress = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = progress + '%';
+        if (currentTimeDisplay) {
+            currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        }
+    }
+}
+
+function toggleMute(id) {
+    const audio = document.getElementById('audio' + id);
+    const volumeBtn = document.querySelector(`.volume-btn[data-audio="${id}"]`);
+    if (!audio || !volumeBtn) return;
+    
+    audio.muted = !audio.muted;
+    volumeBtn.textContent = audio.muted ? '🔇' : '🔊';
+}
+
+function handleAudioError(id) {
+    console.log('Audio error for:', id);
+    const playBtn = document.querySelector(`.play-btn[data-audio="${id}"]`);
+    if (playBtn) {
+        playBtn.textContent = '❌';
+        setTimeout(() => {
+            playBtn.textContent = '▶';
+        }, 3000);
+    }
+}
+
+// Инициализация аудио
+document.addEventListener('DOMContentLoaded', function() {
+    for (let i = 1; i <= 2; i++) {
+        const audio = document.getElementById('audio' + i);
+        const durationDisplay = document.getElementById('duration' + i);
+        
+        if (audio) {
+            // Загружаем метаданные
+            audio.addEventListener('loadedmetadata', function() {
+                if (durationDisplay && audio.duration) {
+                    durationDisplay.textContent = formatTime(audio.duration);
+                }
+            });
+            
+            // Обновляем прогресс
+            audio.addEventListener('timeupdate', function() {
+                updateProgress(i);
+            });
+            
+            // При окончании
+            audio.addEventListener('ended', function() {
+                const playBtn = document.querySelector(`.play-btn[data-audio="${i}"]`);
+                const cover = document.getElementById('cover' + i);
+                if (playBtn) playBtn.textContent = '▶';
+                if (cover) cover.classList.remove('playing');
+                const progressFill = document.getElementById('progressFill' + i);
+                if (progressFill) progressFill.style.width = '0%';
+                const currentTimeDisplay = document.getElementById('currentTime' + i);
+                if (currentTimeDisplay) currentTimeDisplay.textContent = '0:00';
             });
             
             // При паузе
             audio.addEventListener('pause', function() {
-                cover.classList.remove('playing');
+                const playBtn = document.querySelector(`.play-btn[data-audio="${i}"]`);
+                if (playBtn && audio.currentTime < audio.duration) {
+                    playBtn.textContent = '▶';
+                }
             });
             
-            // При окончании воспроизведения
-            audio.addEventListener('ended', function() {
-                cover.classList.remove('playing');
+            // При воспроизведении
+            audio.addEventListener('play', function() {
+                const playBtn = document.querySelector(`.play-btn[data-audio="${i}"]`);
+                if (playBtn) playBtn.textContent = '⏸';
             });
+            
+            // При ошибке
+            audio.addEventListener('error', function(e) {
+                console.log('Audio error:', e);
+                handleAudioError(i);
+            });
+            
+            // Принудительно загружаем
+            audio.load();
         }
-    });
+    }
 });
 
-
-// Custom Audio Player
+// Добавляем поддержку touch для прогресс-бара
 document.addEventListener('DOMContentLoaded', function() {
-    const audioPlayers = {};
-
-    function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return mins + ':' + (secs < 10 ? '0' : '') + secs;
+    for (let i = 1; i <= 2; i++) {
+        const progressBar = document.getElementById('progress' + i);
+        if (progressBar) {
+            let isDragging = false;
+            
+            progressBar.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                isDragging = true;
+                seekAudio(i, e);
+            });
+            
+            progressBar.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (isDragging) {
+                    seekAudio(i, e);
+                }
+            });
+            
+            progressBar.addEventListener('touchend', function() {
+                isDragging = false;
+            });
+            
+            progressBar.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                seekAudio(i, e);
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    seekAudio(i, e);
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+        }
     }
-
-    function setupAudioPlayer(audioId) {
-        const audio = document.getElementById('audio' + audioId);
-        const playBtn = document.querySelector(`.play-btn[data-audio="${audioId}"]`);
-        const progressFill = document.getElementById('progressFill' + audioId);
-        const progressBar = document.getElementById('progress' + audioId);
-        const currentTimeDisplay = document.getElementById('currentTime' + audioId);
-        const durationDisplay = document.getElementById('duration' + audioId);
-        const volumeBtn = document.querySelector(`.volume-btn[data-audio="${audioId}"]`);
-        const cover = document.getElementById('cover' + audioId);
-
-        if (!audio || !playBtn) return;
-
-        let isDragging = false;
-
-        // Обработчик воспроизведения/паузы
-        playBtn.addEventListener('click', function() {
-            if (audio.paused) {
-                // Останавливаем все другие аудио
-                document.querySelectorAll('audio').forEach(otherAudio => {
-                    if (otherAudio !== audio && !otherAudio.paused) {
-                        otherAudio.pause();
-                        const otherId = otherAudio.id.replace('audio', '');
-                        const otherBtn = document.querySelector(`.play-btn[data-audio="${otherId}"]`);
-                        const otherCover = document.getElementById('cover' + otherId);
-                        if (otherBtn) otherBtn.textContent = '▶';
-                        if (otherCover) otherCover.classList.remove('playing');
-                    }
-                });
-                
-                audio.play().catch(e => console.log('Play prevented'));
-                playBtn.textContent = '⏸';
-                if (cover) cover.classList.add('playing');
-            } else {
-                audio.pause();
-                playBtn.textContent = '▶';
-                if (cover) cover.classList.remove('playing');
-            }
-        });
-
-        // Обновление прогресса
-        audio.addEventListener('timeupdate', function() {
-            if (!isDragging && audio.duration) {
-                const progress = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = progress + '%';
-                currentTimeDisplay.textContent = formatTime(audio.currentTime);
-            }
-        });
-
-        // Загрузка метаданных
-        audio.addEventListener('loadedmetadata', function() {
-            durationDisplay.textContent = formatTime(audio.duration);
-        });
-
-        // Клик по прогресс-бару
-        progressBar.addEventListener('click', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            audio.currentTime = x * audio.duration;
-            progressFill.style.width = (x * 100) + '%';
-        });
-
-        // Перетаскивание прогресса
-        progressBar.addEventListener('mousedown', function(e) {
-            isDragging = true;
-            const rect = this.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            audio.currentTime = x * audio.duration;
-            progressFill.style.width = (x * 100) + '%';
-        });
-
-        document.addEventListener('mousemove', function(e) {
-            if (isDragging) {
-                const rect = progressBar.getBoundingClientRect();
-                let x = (e.clientX - rect.left) / rect.width;
-                x = Math.max(0, Math.min(1, x));
-                audio.currentTime = x * audio.duration;
-                progressFill.style.width = (x * 100) + '%';
-            }
-        });
-
-        document.addEventListener('mouseup', function() {
-            isDragging = false;
-        });
-
-        // Touch events для мобильных
-        progressBar.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            isDragging = true;
-            const rect = this.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = (touch.clientX - rect.left) / rect.width;
-            audio.currentTime = x * audio.duration;
-            progressFill.style.width = (x * 100) + '%';
-        });
-
-        progressBar.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            if (isDragging) {
-                const rect = this.getBoundingClientRect();
-                const touch = e.touches[0];
-                let x = (touch.clientX - rect.left) / rect.width;
-                x = Math.max(0, Math.min(1, x));
-                audio.currentTime = x * audio.duration;
-                progressFill.style.width = (x * 100) + '%';
-            }
-        });
-
-        progressBar.addEventListener('touchend', function() {
-            isDragging = false;
-        });
-
-        // Громкость
-        let volumeVisible = false;
-        volumeBtn.addEventListener('click', function() {
-            if (audio.muted) {
-                audio.muted = false;
-                volumeBtn.textContent = '🔊';
-            } else {
-                audio.muted = true;
-                volumeBtn.textContent = '🔇';
-            }
-        });
-
-        // Обновление при окончании
-        audio.addEventListener('ended', function() {
-            playBtn.textContent = '▶';
-            if (cover) cover.classList.remove('playing');
-            progressFill.style.width = '0%';
-            currentTimeDisplay.textContent = '0:00';
-        });
-
-        // При паузе
-        audio.addEventListener('pause', function() {
-            if (audio.currentTime < audio.duration) {
-                playBtn.textContent = '▶';
-            }
-            if (cover) cover.classList.remove('playing');
-        });
-
-        // При воспроизведении
-        audio.addEventListener('play', function() {
-            playBtn.textContent = '⏸';
-            if (cover) cover.classList.add('playing');
-        });
-
-        // Сохраняем ссылку
-        audioPlayers[audioId] = audio;
-    }
-
-    // Настраиваем оба аудиоплеера
-    setupAudioPlayer(1);
-    setupAudioPlayer(2);
 });
