@@ -441,3 +441,169 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+// Custom Audio Player
+document.addEventListener('DOMContentLoaded', function() {
+    const audioPlayers = {};
+
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+
+    function setupAudioPlayer(audioId) {
+        const audio = document.getElementById('audio' + audioId);
+        const playBtn = document.querySelector(`.play-btn[data-audio="${audioId}"]`);
+        const progressFill = document.getElementById('progressFill' + audioId);
+        const progressBar = document.getElementById('progress' + audioId);
+        const currentTimeDisplay = document.getElementById('currentTime' + audioId);
+        const durationDisplay = document.getElementById('duration' + audioId);
+        const volumeBtn = document.querySelector(`.volume-btn[data-audio="${audioId}"]`);
+        const cover = document.getElementById('cover' + audioId);
+
+        if (!audio || !playBtn) return;
+
+        let isDragging = false;
+
+        // Обработчик воспроизведения/паузы
+        playBtn.addEventListener('click', function() {
+            if (audio.paused) {
+                // Останавливаем все другие аудио
+                document.querySelectorAll('audio').forEach(otherAudio => {
+                    if (otherAudio !== audio && !otherAudio.paused) {
+                        otherAudio.pause();
+                        const otherId = otherAudio.id.replace('audio', '');
+                        const otherBtn = document.querySelector(`.play-btn[data-audio="${otherId}"]`);
+                        const otherCover = document.getElementById('cover' + otherId);
+                        if (otherBtn) otherBtn.textContent = '▶';
+                        if (otherCover) otherCover.classList.remove('playing');
+                    }
+                });
+                
+                audio.play().catch(e => console.log('Play prevented'));
+                playBtn.textContent = '⏸';
+                if (cover) cover.classList.add('playing');
+            } else {
+                audio.pause();
+                playBtn.textContent = '▶';
+                if (cover) cover.classList.remove('playing');
+            }
+        });
+
+        // Обновление прогресса
+        audio.addEventListener('timeupdate', function() {
+            if (!isDragging && audio.duration) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = progress + '%';
+                currentTimeDisplay.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        // Загрузка метаданных
+        audio.addEventListener('loadedmetadata', function() {
+            durationDisplay.textContent = formatTime(audio.duration);
+        });
+
+        // Клик по прогресс-бару
+        progressBar.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = x * audio.duration;
+            progressFill.style.width = (x * 100) + '%';
+        });
+
+        // Перетаскивание прогресса
+        progressBar.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            const rect = this.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = x * audio.duration;
+            progressFill.style.width = (x * 100) + '%';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const rect = progressBar.getBoundingClientRect();
+                let x = (e.clientX - rect.left) / rect.width;
+                x = Math.max(0, Math.min(1, x));
+                audio.currentTime = x * audio.duration;
+                progressFill.style.width = (x * 100) + '%';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        // Touch events для мобильных
+        progressBar.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            const rect = this.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = (touch.clientX - rect.left) / rect.width;
+            audio.currentTime = x * audio.duration;
+            progressFill.style.width = (x * 100) + '%';
+        });
+
+        progressBar.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            if (isDragging) {
+                const rect = this.getBoundingClientRect();
+                const touch = e.touches[0];
+                let x = (touch.clientX - rect.left) / rect.width;
+                x = Math.max(0, Math.min(1, x));
+                audio.currentTime = x * audio.duration;
+                progressFill.style.width = (x * 100) + '%';
+            }
+        });
+
+        progressBar.addEventListener('touchend', function() {
+            isDragging = false;
+        });
+
+        // Громкость
+        let volumeVisible = false;
+        volumeBtn.addEventListener('click', function() {
+            if (audio.muted) {
+                audio.muted = false;
+                volumeBtn.textContent = '🔊';
+            } else {
+                audio.muted = true;
+                volumeBtn.textContent = '🔇';
+            }
+        });
+
+        // Обновление при окончании
+        audio.addEventListener('ended', function() {
+            playBtn.textContent = '▶';
+            if (cover) cover.classList.remove('playing');
+            progressFill.style.width = '0%';
+            currentTimeDisplay.textContent = '0:00';
+        });
+
+        // При паузе
+        audio.addEventListener('pause', function() {
+            if (audio.currentTime < audio.duration) {
+                playBtn.textContent = '▶';
+            }
+            if (cover) cover.classList.remove('playing');
+        });
+
+        // При воспроизведении
+        audio.addEventListener('play', function() {
+            playBtn.textContent = '⏸';
+            if (cover) cover.classList.add('playing');
+        });
+
+        // Сохраняем ссылку
+        audioPlayers[audioId] = audio;
+    }
+
+    // Настраиваем оба аудиоплеера
+    setupAudioPlayer(1);
+    setupAudioPlayer(2);
+});
