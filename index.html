@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ирина Ивановна - Золотой юбилей</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="main-title">С юбилеем!</h1>
+            <p class="greeting-text">65 лет - время расцвета мудрости, тепла и душевной красоты!</p>
+        </header>
+
+        <!-- Intro Section -->
+        <section class="intro-section">
+            <div class="intro-content">
+                <img src="girl/2.jfif" alt="Ирина Ивановна" class="intro-photo">
+                <div class="intro-icon">🎉</div>
+                <h3 class="intro-title">Дорогая Ирина Ивановна!</h3>
+                <p class="intro-text">
+                    В этот особенный день хотим поздравить Вас с золотым юбилеем!
+                    Пусть каждый новый день приносит радость, вдохновение и новые возможности.
+                    Желаем крепкого здоровья, гармонии в душе и исполнения самых заветных желаний.
+                </p>
+            </div>
+        </section>
+
+        <!-- Video Congratulations -->
+        <section class="video-section">
+            <h3 class="section-title">Видео-поздравления</h3>
+            <div class="video-slider">
+                <button class="slider-btn prev-btn" onclick="changeVideo(-1)">&#10094;</button>
+                <div class="video-container">
+                    <div id="videoPlaceholder" class="video-placeholder" onclick="playFirstVideo()">
+                        <img src="pictures/happypik.ru_s-jubileem-zhen1.jpg" alt="Нажмите для просмотра видео" class="placeholder-image">
+                        <div class="placeholder-overlay">
+                            <div class="placeholder-text">Нажмите, чтобы начать</div>
+                        </div>
+                    </div>
+                    <video id="currentVideo" controls style="display: none;"></video>
+                </div>
+                <button class="slider-btn next-btn" onclick="changeVideo(1)">&#10095;</button>
+            </div>
+            <div class="video-counter">
+                <span id="videoNumber">1</span> / <span id="totalVideos">13</span>
+            </div>
+        </section>
+
+        <!-- Audio Congratulations -->
+        <section class="audio-section">
+            <h3 class="section-title">Аудио-поздравления</h3>
+            <div class="audio-list">
+                <div class="audio-item">
+                    <img src="congratulations/audio/1.jpg" alt="Аудио обложка" class="audio-cover">
+                    <audio controls>
+                        <source src="congratulations/audio/1.mp3" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудио.
+                    </audio>
+                </div>
+                <div class="audio-item">
+                    <img src="congratulations/audio/2.jpg" alt="Аудио обложка" class="audio-cover">
+                    <audio controls>
+                        <source src="congratulations/audio/2.mp3" type="audio/mpeg">
+                        Ваш браузер не поддерживает аудио.
+                    </audio>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music Congratulations -->
+        <section class="music-section">
+            <h3 class="section-title">Музыкальное поздравление</h3>
+            <div class="music-container">
+                <div id="musicPlaceholder" class="music-placeholder" onclick="playMusicVideo()">
+                    <img src="congratulations/music/1.jpg" alt="Музыкальное поздравление" class="music-cover" onerror="this.src='pictures/happypik.ru_s-jubileem-zhen1.jpg'">
+                    <div class="music-overlay">
+                        <div class="music-icon">🎹</div>
+                        <div class="music-text">Нажмите, чтобы начать</div>
+                    </div>
+                </div>
+                <video id="musicVideo" controls style="display: none;"></video>
+            </div>
+        </section>
+
+        <!-- Family Video Congratulations -->
+        <section class="family-video-section">
+            <h3 class="section-title">От близких сердец!</h3>
+            <div class="family-video-grid">
+                <!-- Video 1 (from sister) -->
+                <div class="family-video-item">
+                    <div id="familyVideo1Placeholder" class="family-video-placeholder" onclick="playFamilyVideo(1)">
+                        <img src="congratulations/family/1.jpg" alt="Поздравление от сестры" class="family-video-cover" onerror="this.src='pictures/happypik.ru_s-jubileem-zhen1.jpg'">
+                        <div class="family-video-overlay">
+                            <div class="family-video-icon">❤️</div>
+                            <div class="family-video-text">Нажмите, чтобы начать</div>
+                        </div>
+                    </div>
+                    <video id="familyVideo1" controls style="display: none;"></video>
+                </div>
+                <!-- Video 2 (from son) -->
+                <div class="family-video-item">
+                    <div id="familyVideo2Placeholder" class="family-video-placeholder" onclick="playFamilyVideo(2)">
+                        <img src="congratulations/family/2.jpg" alt="Поздравление от сына" class="family-video-cover" onerror="this.src='pictures/happypik.ru_s-jubileem-zhen1.jpg'">
+                        <div class="family-video-overlay">
+                            <div class="family-video-icon">💙</div>
+                            <div class="family-video-text">Нажмите, чтобы начать</div>
+                        </div>
+                    </div>
+                    <video id="familyVideo2" controls style="display: none;"></video>
+                </div>
+            </div>
+        </section>
+
+        <!-- Text Congratulations -->
+        <section class="text-congrats-section">
+            <h3 class="section-title">Теплые слова</h3>
+            <div class="congratulations-grid">
+                <!-- Карточка 1 -->
+                <div class="congrat-card">
+                    <img src="pictures/1.webp" alt="Поздравительная открытка" class="congrat-photo">
+                    <div class="card-icon">🌹</div>
+                    <p class="congrat-text">
+                        От всей души поздравляем Вас, Ирина Ивановна, с днем рождения! В зале заседаний Вы — образец объективности, строгой логики и беспристрастности. Но мы знаем, что за мантией судьи скрывается удивительно добрая, мудрая и тонко чувствующая женщина. Желаем Вам, чтобы весы Фемиды всегда склонялись в Вашу сторону при выборе собственной судьбы. Пусть в жизни будет как можно больше поводов для искренней улыбки, моментов спокойной радости без оглядки на статьи и кодексы, женского счастья и времени на себя. Крепкого здоровья и гармонии во всем!
+                    </p>
+                </div>
+                <!-- Карточка 2 -->
+                <div class="congrat-card">
+                    <img src="pictures/2.jpg" alt="Поздравительная открытка" class="congrat-photo">
+                    <div class="card-icon">✨</div>
+                    <p class="congrat-text">
+                        Поздравляем с прекрасным юбилеем! Эта дата — лишь красивая цифра, которая никак не отражается в Ваших сияющих глазах. Глядя на Вас, понимаешь, что женская красота с годами становится только глубже, как хорошее вино, превращаясь из внешней привлекательности во внутреннее благородство, свет и тепло. Вы, Ирина Ивановна — человек с огромным сердцем, способный согреть одним своим присутствием. Спасибо Вам за мудрость, за умение слушать без осуждения и любить безусловно. Вы научили многих из нас видеть красоту в мелочах и находить силы там, где, казалось бы, их уже нет. Пусть Ваше сердце никогда не знает тревог, а душа поет от счастья.
+                    </p>
+                </div>
+                <!-- Карточка 3 -->
+                <div class="congrat-card">
+                    <img src="pictures/3.webp" alt="Поздравительная открытка" class="congrat-photo">
+                    <div class="card-icon">🌟</div>
+                    <p class="congrat-text">
+                        Юбилей — это не итог, а золотая коллекция лучших мгновений. Пусть впереди их будет еще больше, чем за спиной. Примите в этот юбилей Букет из самых теплых слов. Вы — воплощение идей, опора всех наших основ. В Вас красота и острый ум слились в гармонии одной. Средь повседневных важных сумм Вы остаетесь неземной. Взгляд ясен, профиль так же строг, но как глаза теплом горят!
+                    </p>
+                </div>
+                <!-- Карточка 4 -->
+                <div class="congrat-card">
+                    <img src="pictures/4.jfif" alt="Поздравительная открытка" class="congrat-photo">
+                    <div class="card-icon">💫</div>
+                    <p class="congrat-text">
+                        Пусть эта красивая дата станет началом самой счастливой главы твоей книги жизни. С юбилеем! Берегите тот свет, который Вы дарите этому миру.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">С любовью и теплом!</p>
+            <p class="date-text">21 июля 2026 года</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
